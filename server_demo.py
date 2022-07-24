@@ -96,7 +96,7 @@ def getAnUser(name):
     # # return jsonify(json.dumps(resultdic,ensure_ascii=False))
 
 @app.route('/getUsers', methods=['GET'])
-def getUsersbyMonth():
+def getUsers():
     
     sqlcomm = "select * from students"
     jsonData = getDatafromDB(sqlcomm)
