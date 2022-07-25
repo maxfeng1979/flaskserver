@@ -1,8 +1,10 @@
 from cgitb import reset
+from crypt import methods
 from flask import Flask, jsonify, request
 import sqlite3
 import json
 from flask import jsonify
+import base64
 
 
 app = Flask(__name__)
@@ -27,6 +29,14 @@ def getDatafromDB(sqlcommand):
         datalist.append(result)
 
     return datalist
+
+def image_to_base64(full_path):
+    with open(full_path, "rb") as f:
+        data = f.read()
+        image_base64_enc = base64.b64encode(data)
+        image_base64_enc = str(image_base64_enc, 'utf-8')
+    return image_base64_enc
+
 
 @app.route("/")
 def hello():
@@ -117,8 +127,74 @@ def demo():
     }
     return jsonify(json_dict)
 
+@app.route('/predict', methods=['POST'])
+def predict():
+    if request.method == 'POST':
+        file = request.data
+        with open("client-src.jpg","wb") as f:
+            f.write(file)
+	   
+        # #调用检测函数 
+        # res_image, res_cnt = detect("client-src.jpg")
+        # json_res = image_to_base64("./server_resrbg.jpg")
+
+        # result_dict = {
+        #     'code': '200',
+        #     'code_msg': 'successful',
+        #     'detect_res': json_res,
+        #     'detect_number':res_cnt
+        #     }
+
+        # json_res = image_to_base64("./server_resrbg.jpg")
+        res_cnt = 5
+
+        #更新数据库
+        sqlcomm = "select * from students where name='" + name + "'"
+        jsonData = getDatafromDB(sqlcomm)
+    
+        resultdic = {}
+        resultdic["code"] = '200'
+        resultdic["message"] = "successful"
+        resultdic["total"] = str(len(jsonData))
+        resultdic["data"] =  jsonData     
 
 
+        result_dict = {
+            'code': '200',
+            'code_msg': 'successful',
+            'detect_res': "apicture",
+            'detect_number':res_cnt
+            }
+
+    #jsonify中保存着结果图片的base编码，拿下来客户端解码即可得到结果图片
+    return jsonify(result_dict)
+
+@app.route('/gettotal/<schoolname>', methods=['Get'])
+def getTotal(schoolname):
+    
+    conn = sqlite3.connect('student.db')
+    cur = conn.cursor()
+    sqlcomm = "select school, sum(bottolcount) as total from students group by school having school='"+ schoolname +"'"
+    cur.execute(sqlcomm)
+
+    data = cur.fetchall()
+    conn.close()
+
+    datalist = []
+    
+    for row in data:
+        result = {}
+        result['school'] = row[0]
+        result['count'] = row[1]
+        datalist.append(result)
+   
+    resultdic = {}
+    resultdic["code"] = '200'
+    resultdic["message"] = "successful"
+    resultdic["total"] = str(len(datalist))
+    resultdic["data"] =  datalist  
+
+    return jsonify(resultdic) 
 
 if __name__ == "__main__":
-     app.run()
+     app.run(debug=True)
