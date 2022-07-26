@@ -1,10 +1,10 @@
-from cgitb import reset
-from crypt import methods
+# -*- coding: utf-8 -*-
 from flask import Flask, jsonify, request
 import sqlite3
 import json
 from flask import jsonify
 import base64
+import sys
 
 
 app = Flask(__name__)
@@ -41,6 +41,34 @@ def image_to_base64(full_path):
 @app.route("/")
 def hello():
     return "Hello World!"
+
+@app.route("/testPost",methods=['POST'])
+def testPost():
+    param1 = request.form['name']
+    param2 = request.form['school']
+    if request.method == 'POST':
+        thefile = request.data
+        with open("client-src.jpg","wb") as f:
+            f.write(thefile)
+
+    return "Hello Post!" + param1 + "  " + param2
+
+@app.route("/testPostData",methods=['POST'])
+def testPostData():   
+    if request.method == 'POST':
+        thefile = request.files["file1"] #这个request.files["file1"] 是flask的临时文件缓存。
+        # print(type(thefile["file1"]))
+        # print(len(thefile))
+        # print(sys.getsizeof(thefile["file1"]))
+        # print(len(request.form))
+        # print(request.form['name'])
+        # with open("client-src.jpg","wb") as f:
+        #     f.write(thefile)
+        
+        #
+        thefile.save("client-src.jpg") #可以直接保存诚文件，或用thefile.read()读出二进制流
+
+    return "Hello PostData!" + request.form['name']
 
 @app.route('/getAnUser/<name>', methods=['GET'])
 def getAnUser(name):
@@ -149,7 +177,7 @@ def predict():
         res_cnt = 5
 
         #更新数据库
-        sqlcomm = "select * from students where name='" + name + "'"
+        sqlcomm = "update * from students where name='" + name + "'"
         jsonData = getDatafromDB(sqlcomm)
     
         resultdic = {}
@@ -169,9 +197,12 @@ def predict():
     #jsonify中保存着结果图片的base编码，拿下来客户端解码即可得到结果图片
     return jsonify(result_dict)
 
+
 @app.route('/gettotal/<schoolname>', methods=['Get'])
 def getTotal(schoolname):
     
+    # schoolname = request.args.get('school')
+
     conn = sqlite3.connect('student.db')
     cur = conn.cursor()
     sqlcomm = "select school, sum(bottolcount) as total from students group by school having school='"+ schoolname +"'"
