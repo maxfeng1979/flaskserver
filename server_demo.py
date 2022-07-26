@@ -157,45 +157,69 @@ def demo():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if request.method == 'POST':
-        file = request.data
-        with open("client-src.jpg","wb") as f:
-            f.write(file)
-	   
-        # #调用检测函数 
-        # res_image, res_cnt = detect("client-src.jpg")
-        # json_res = image_to_base64("./server_resrbg.jpg")
 
-        # result_dict = {
-        #     'code': '200',
-        #     'code_msg': 'successful',
-        #     'detect_res': json_res,
-        #     'detect_number':res_cnt
-        #     }
-
-        # json_res = image_to_base64("./server_resrbg.jpg")
-        res_cnt = 5
-
-        #更新数据库
-        sqlcomm = "update * from students where name='" + name + "'"
-        jsonData = getDatafromDB(sqlcomm)
-    
-        resultdic = {}
-        resultdic["code"] = '200'
-        resultdic["message"] = "successful"
-        resultdic["total"] = str(len(jsonData))
-        resultdic["data"] =  jsonData     
-
-
-        result_dict = {
+    thefile = request.files["file1"] #这个request.files["file1"] 是flask的临时文件缓存。
+        # print(type(thefile["file1"]))
+        # print(len(thefile))
+        # print(sys.getsizeof(thefile["file1"]))
+        # print(len(request.form))
+        # print(request.form['name'])
+        # with open("client-src.jpg","wb") as f:
+        #     f.write(thefile)
+        
+        #
+    thefile.save("client-src.jpg") #可以直接保存诚文件，或用thefile.read()读出二进制流
+    res_cnt = 5
+    result_dict = {
             'code': '200',
             'code_msg': 'successful',
-            'detect_res': "apicture",
+            'detect_res': "Mock apicture",
             'detect_number':res_cnt
             }
-
-    #jsonify中保存着结果图片的base编码，拿下来客户端解码即可得到结果图片
+    
     return jsonify(result_dict)
+
+
+
+    # if request.method == 'POST':
+    #     file = request.data
+    #     with open("client-src.jpg","wb") as f:
+    #         f.write(file)
+	   
+    #     # #调用检测函数 
+    #     # res_image, res_cnt = detect("client-src.jpg")
+    #     # json_res = image_to_base64("./server_resrbg.jpg")
+
+    #     # result_dict = {
+    #     #     'code': '200',
+    #     #     'code_msg': 'successful',
+    #     #     'detect_res': json_res,
+    #     #     'detect_number':res_cnt
+    #     #     }
+
+    #     # json_res = image_to_base64("./server_resrbg.jpg")
+    #     res_cnt = 5
+
+    #     #更新数据库
+    #     sqlcomm = "update * from students where name='" + name + "'"
+    #     jsonData = getDatafromDB(sqlcomm)
+    
+    #     resultdic = {}
+    #     resultdic["code"] = '200'
+    #     resultdic["message"] = "successful"
+    #     resultdic["total"] = str(len(jsonData))
+    #     resultdic["data"] =  jsonData     
+
+
+    #     result_dict = {
+    #         'code': '200',
+    #         'code_msg': 'successful',
+    #         'detect_res': "apicture",
+    #         'detect_number':res_cnt
+    #         }
+
+    # #jsonify中保存着结果图片的base编码，拿下来客户端解码即可得到结果图片
+    # return jsonify(result_dict)
 
 
 @app.route('/gettotal/<schoolname>', methods=['Get'])
